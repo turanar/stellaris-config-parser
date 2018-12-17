@@ -23,8 +23,6 @@ public class Technology implements Comparable<Technology> {
     public List<HashMap<String,String>> prerequisites_names = new ArrayList<>();
     public List<WeightModifier> weight_modifiers = new ArrayList<>();
     public List<Modifier> potential = new ArrayList<>();
-    public boolean is_gestalt = false;
-    public boolean is_machine = false;
 
     public Technology() {
 

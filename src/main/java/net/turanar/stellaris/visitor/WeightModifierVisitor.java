@@ -1,5 +1,6 @@
 package net.turanar.stellaris.visitor;
 
+import net.turanar.stellaris.Global;
 import net.turanar.stellaris.domain.Modifier;
 import static net.turanar.stellaris.domain.ModifierType.*;
 import net.turanar.stellaris.domain.Technology;
@@ -54,6 +55,11 @@ public class WeightModifierVisitor {
                     retval.pair = m.pair;
                 }
             }
+        } else if ("factor".equals(modifier.key())) {
+            String value = gs(modifier);
+            if(value.startsWith("@")) value = Global.variable(value);
+            Float f = Float.valueOf(value);
+            tech.base_weight = tech.base_weight * f;
         }
 
         return retval;

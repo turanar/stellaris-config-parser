@@ -14,6 +14,8 @@ public class WeightModifier extends Modifier {
         String format = "(×%s)";
         if(this.add > 0) format = "(+%s)";
         if(type != null) format += " %s";
-        return String.format(format, String.valueOf(factor), type != null ? type.parse(pair) : "");
+        String s_factor = "<b style='color:lime'>" + factor + "</b>";
+        if(factor < 1.0f) s_factor = "<b style='color:red'>" + factor + "</b>";
+        return String.format(format, s_factor, type != null ? type.parse(pair).replaceAll("\\n","<br/>") : "");
     }
 }

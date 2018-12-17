@@ -2,16 +2,14 @@ package net.turanar.stellaris;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.turanar.stellaris.domain.GameObject;
-import net.turanar.stellaris.domain.Modifier;
-import net.turanar.stellaris.domain.Technology;
-import net.turanar.stellaris.domain.WeightModifier;
+import net.turanar.stellaris.domain.*;
 import net.turanar.stellaris.parser.StellarisParser;
 import net.turanar.stellaris.parser.StellarisParser.*;
 import net.turanar.stellaris.visitor.ModifierTypeAdapter;
 import net.turanar.stellaris.visitor.TechnologyVisitor;
 import net.turanar.stellaris.visitor.UnlockVisitor;
 import net.turanar.stellaris.visitor.WeightModifierTypeAdapter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -64,15 +62,16 @@ public class Main {
             }
         });
 
-        for(Technology tech : technologies.values()) {
+        techLoop: for(Technology tech : technologies.values()) {
             if(tech.tier == null) tech.tier = 0;
             if(tech.cost == null) tech.cost = 0;
             if(tech.is_start_tech) tech.prerequisites.clear();
-            if(tech.potential.contains("Has Machine Intelligence Authority")) {
-                tech.is_machine = true;
-            }
-            if(tech.potential.contains("Has Gestalt Consciousness Ethic")) {
-                tech.is_gestalt = true;
+
+            Iterator<String> iter = tech.prerequisites.iterator();
+            while(iter.hasNext()) {
+                String preq = iter.next();
+                Technology reqTech = technologies.get(preq);
+                if(reqTech.is_start_tech && reqTech.area != tech.area) iter.remove();
             }
 
             for(String preq : tech.prerequisites) {
@@ -107,7 +106,6 @@ public class Main {
                     return 0;
                 }
             });
-
             array.add(tech);
         }
 
@@ -116,9 +114,10 @@ public class Main {
         }
 
         GsonBuilder builder = new GsonBuilder();
-        //builder.setPrettyPrinting();
+
         builder.registerTypeAdapter(WeightModifier.class, new WeightModifierTypeAdapter());
         builder.registerTypeAdapter(Modifier.class, new ModifierTypeAdapter());
+        builder.setPrettyPrinting();
         Gson gson = builder.create();
 
         FileOutputStream fos = new FileOutputStream("techs.json");

@@ -60,7 +60,7 @@ public class UnlockVisitor extends StellarisBaseVisitor<Technology> {
             key = i18n(key);
         }
 
-        if(tech != null) tech.feature_unlocks.add(clean(type.label + ": " + key));
+        if(tech != null) tech.feature_unlocks.add(clean("<b>" + type.label + "</b>: " + key));
 
         return tech;
     }

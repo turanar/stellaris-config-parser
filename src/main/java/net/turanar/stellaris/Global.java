@@ -91,7 +91,6 @@ public class Global {
         try {
             StellarisParser parser = parser(path);
             if(parser == null) return;
-
             for(ParseTree child : parser.file().children) {
                 if(child instanceof VarContext) {
                     VarContext var = (VarContext)child;
@@ -122,6 +121,12 @@ public class Global {
             }
         });
 
+        Files.list(Paths.get("common/technology"))
+        .filter(path->path.toString().endsWith(".txt"))
+        .forEach((path) -> {
+            parseVariables(path);
+        });
+
         // Parse scripted variables
         Files.list(Paths.get("common/scripted_variables"))
         .filter(path->path.toString().endsWith(".txt"))
@@ -130,11 +135,6 @@ public class Global {
         });
 
         // Parse variable in technology files
-        Files.list(Paths.get("common/technology"))
-        .filter(path->path.toString().endsWith(".txt"))
-        .forEach((path) -> {
-            parseVariables(path);
-        });
     }
 
     private static String getLocaleContent(Path path) throws IOException {
