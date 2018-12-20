@@ -2,6 +2,7 @@ package net.turanar.stellaris;
 
 import net.turanar.stellaris.parser.StellarisLexer;
 import net.turanar.stellaris.parser.StellarisParser;
+import net.turanar.stellaris.parser.ThrowingErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 public class Global {
     public static Map<String,String> GLOBAL_STRINGS = new HashMap<>();
     public static Map<String,String> GLOBAL_VARIABLES = new HashMap<>();
+    public static Map<String,PairContext> SCRIPTED_TRIGGERS = new HashMap<>();
 
     public static String LS = "    •   ";
 
@@ -87,6 +89,21 @@ public class Global {
         return retval;
     }
 
+    private static void parseTriggers(Path path) {
+        try {
+            StellarisParser parser = parser(path);
+            if(parser == null) return;
+            for(ParseTree child : parser.file().children) {
+                if(child instanceof PairContext) {
+                    PairContext pair = (PairContext)child;
+                    SCRIPTED_TRIGGERS.put(pair.key(), pair);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void parseVariables(Path path) {
         try {
             StellarisParser parser = parser(path);
@@ -134,6 +151,12 @@ public class Global {
             parseVariables(path);
         });
 
+        Files.list(Paths.get("common/scripted_triggers"))
+        .filter(path->path.toString().endsWith(".txt"))
+        .forEach((path) -> {
+            parseTriggers(path);
+        });
+
         // Parse variable in technology files
     }
 
@@ -164,7 +187,10 @@ public class Global {
         List<String> output = new ArrayList<>();
         List<String> lines = Files.readAllLines(path);
         for(String line : lines) {
-            line = line.replaceAll("\"(north|east|west|south)\"","$1");
+            line = line.replaceAll("\"(north|east|west|south|mid|bow|stern|core|ship)\"","$1");
+            line = line.replaceAll("\"(\\d)\"","fix_$1");
+            line = line.replaceAll("event_target:","");
+
             if(!line.startsWith("#")) output.add(line);
         }
 
@@ -179,9 +205,13 @@ public class Global {
 
         CharStream stream = CharStreams.fromString(content);
         StellarisLexer lex = new StellarisLexer(stream);
+        lex.removeErrorListeners();
+        lex.addErrorListener(ThrowingErrorListener.INSTANCE);
 
         TokenStream tokenStream = new CommonTokenStream(lex);
         StellarisParser parser = new StellarisParser(tokenStream);
+        parser.removeErrorListeners();
+        parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
         return parser;
     }

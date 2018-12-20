@@ -1,5 +1,6 @@
 package net.turanar.stellaris.domain;
 
+import net.turanar.stellaris.Global;
 import net.turanar.stellaris.parser.StellarisParser.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,18 +28,24 @@ public enum ModifierType {
     is_planet_class("Is %s"),
     has_communications("Has communication with our Empire"),
     pop_has_trait("Pop has trait %s"),
-
     has_policy_flag((p) -> f("Has policy %s", i18n(gs(p) + "_name"))),
     owns_any_bypass((p) -> f("Controls a system with a %s", i18n("bypass_" + gs(p).toLowerCase()))),
     has_seen_any_bypass((p) -> f("Has encountered a %s", i18n("bypass_" + gs(p).toLowerCase()))),
 
-    is_xenophile("Is Xenophile|Is NOT Xenophile", DefaultParser.SIMPLE_BOOLEAN),
-    is_pacifist("Is Pacifist|Is NOT Pacifist", DefaultParser.SIMPLE_BOOLEAN),
-    is_materialist("Is Materialist|Is NOT Materialist", DefaultParser.SIMPLE_BOOLEAN),
-    is_spiritualist("Is Spiritualist|Is NOT Spiritualist", DefaultParser.SIMPLE_BOOLEAN),
-    is_gestalt("Is Gestalt|Is NOT Gestalt", DefaultParser.SIMPLE_BOOLEAN),
+    is_xenophile(DefaultParser.SCRIPTED),
+    is_pacifist(DefaultParser.SCRIPTED),
+    is_materialist(DefaultParser.SCRIPTED),
+    is_spiritualist(DefaultParser.SCRIPTED),
+    is_gestalt(DefaultParser.SCRIPTED),
+    is_mechanical_empire(DefaultParser.SCRIPTED),
+    is_regular_empire(DefaultParser.SCRIPTED),
+    is_machine_empire(DefaultParser.SCRIPTED),
+    is_hive_empire(DefaultParser.SCRIPTED),
+    is_megacorp(DefaultParser.SCRIPTED),
+    allows_slavery(DefaultParser.SCRIPTED),
+
     is_ai("Is AI|Is NOT AI", DefaultParser.SIMPLE_BOOLEAN),
-    allows_slavery("Allows Slavery|Does NOT allows Slavery", DefaultParser.SIMPLE_BOOLEAN),
+
     is_enslaved("Pop is enslaved|Pop is NOT enslaved", DefaultParser.SIMPLE_BOOLEAN),
     is_sapient("Pop is Sapient|Pop is NOT Sapient", DefaultParser.SIMPLE_BOOLEAN),
     has_any_megastructure_in_empire("Has any Megastructure|Does NOT have any Megastructure",DefaultParser.SIMPLE_BOOLEAN),
@@ -57,6 +64,7 @@ public enum ModifierType {
     any_system_within_border("Any System within borders", DefaultParser.CONDITIONAL),
     any_relation("Any Country Relation",DefaultParser.CONDITIONAL),
     any_pop("Any Pop", DefaultParser.CONDITIONAL),
+    owner_species("Founder Species :", DefaultParser.CONDITIONAL),
 
     NOR("All must be false", DefaultParser.CONDITIONAL),
     OR("One must be true", DefaultParser.CONDITIONAL),
@@ -179,7 +187,33 @@ public enum ModifierType {
                 Modifier m = visitCondition(prop);
                 conditions.add(m.toString());
             }
+
             String retval = format;
+            for(int i = 0; i < conditions.size(); i++) {
+                retval = retval + "\n" + LS + conditions.get(i).replaceAll(LS, "\t" + LS);
+            }
+            return retval;
+        }),
+        SCRIPTED((format, p) -> {
+            PairContext q = SCRIPTED_TRIGGERS.get(p.key());
+            boolean value = gs(p).equals("yes");
+            List<String> conditions = new ArrayList<>();
+
+            if(!value) {
+              return ModifierType.NOT.parse(q);
+            }
+
+            for(PairContext prop : q.value().map().pair()) {
+                Modifier m = visitCondition(prop);
+                conditions.add(m.toString());
+            }
+            String retval = format;
+
+            if(conditions.size() < 2) {
+                retval = conditions.get(0);
+                return retval;
+            }
+
             for(int i = 0; i < conditions.size(); i++) {
                 retval = retval + "\n" + LS + conditions.get(i).replaceAll(LS, "\t" + LS);
             }
@@ -201,6 +235,10 @@ public enum ModifierType {
 
     ModifierType(String format, DefaultParser parser) {
         this.parser = (p) -> parser.apply(format, p);
+    }
+
+    ModifierType(DefaultParser parser) {
+        this.parser = (p) -> parser.apply(null, p);
     }
 
     ModifierType(Function<PairContext,String> parser) {

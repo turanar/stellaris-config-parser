@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public enum Category {
     // physics
-    Computing, @SerializedName("Field Manipulation") Field_Manipulation, Particles,
+    Particles, @SerializedName("Field Manipulation") Field_Manipulation, Computing,
     // society
     Biology, @SerializedName("Military Theory") Military_Theory, @SerializedName("New Worlds") New_Worlds, Statecraft, Psionics,
     // engineering

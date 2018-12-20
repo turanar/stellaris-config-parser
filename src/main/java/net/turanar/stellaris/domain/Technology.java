@@ -23,6 +23,17 @@ public class Technology implements Comparable<Technology> {
     public List<HashMap<String,String>> prerequisites_names = new ArrayList<>();
     public List<WeightModifier> weight_modifiers = new ArrayList<>();
     public List<Modifier> potential = new ArrayList<>();
+    public SortedSet<Technology> children = new TreeSet<>();
+
+    public boolean is_event = false;
+
+    public Boolean is_gestalt = null;
+    public Boolean is_megacorp = null;
+    public Boolean is_machine_empire = null;
+    public Boolean is_hive_empire = null;
+
+    public Boolean is_drive_assimilator = null;
+    public Boolean is_rogue_servitor = null;
 
     public Technology() {
 
@@ -55,8 +66,14 @@ public class Technology implements Comparable<Technology> {
         int comparison = this.area.compareTo(that.area);
         if (comparison != EQUAL) return comparison;
 
+        comparison = this.category.compareTo(that.category);
+        if (comparison != EQUAL) return comparison;
+
         if(this.tier == null) this.tier = 0;
         comparison = Integer.valueOf(this.tier).compareTo(Integer.valueOf(that.tier));
+        if (comparison != EQUAL) return comparison;
+
+        comparison = this.cost.compareTo(that.cost);
         if (comparison != EQUAL) return comparison;
 
         return 1;

@@ -11,7 +11,8 @@ public enum GameObject {
     POLICY("Policy","common/policies","policy_"),
     //BUILDABLE_POP("Buildable Pop","common/buildable_pops"),
     //TILE_BLOCKER("Clear Blockers", "common/tile_blockers"),
-    SHIP_SIZE("Ship Size", "common/ship_sizes","","00_ship_sizes.txt");
+    SHIP_SIZE("Ship Size", "common/ship_sizes","","00_ship_sizes.txt"),
+    STARBASE("Starbase Upgrade", "common/ship_sizes","","00_starbases.txt");
 
     public String folder;
     public String label;

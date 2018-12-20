@@ -33,6 +33,9 @@ public class UnlockVisitor extends StellarisBaseVisitor<Technology> {
     @Override
     public Technology visitPair(StellarisParser.PairContext pair) {
         String key = pair.key();
+        if(type == GameObject.STARBASE) {
+            System.out.println(key);
+        }
         Technology tech = null;
         if(pair.value().map() == null) return null;
 
