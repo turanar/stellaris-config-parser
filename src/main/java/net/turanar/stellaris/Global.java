@@ -120,7 +120,7 @@ public class Global {
     }
 
     public static void init() throws IOException {
-        Files.list(Paths.get("localisation/english"))
+        Files.list(Paths.get(Main.FOLDER + "/localisation/english"))
         .filter(path->path.toString().endsWith(".yml"))
         .forEach(path -> {
             Yaml yaml = new Yaml();
@@ -138,20 +138,20 @@ public class Global {
             }
         });
 
-        Files.list(Paths.get("common/technology"))
+        Files.list(Paths.get(Main.FOLDER + "/common/technology"))
         .filter(path->path.toString().endsWith(".txt"))
         .forEach((path) -> {
             parseVariables(path);
         });
 
         // Parse scripted variables
-        Files.list(Paths.get("common/scripted_variables"))
+        Files.list(Paths.get(Main.FOLDER + "/common/scripted_variables"))
         .filter(path->path.toString().endsWith(".txt"))
         .forEach((path) -> {
             parseVariables(path);
         });
 
-        Files.list(Paths.get("common/scripted_triggers"))
+        Files.list(Paths.get(Main.FOLDER + "/common/scripted_triggers"))
         .filter(path->path.toString().endsWith(".txt"))
         .forEach((path) -> {
             parseTriggers(path);

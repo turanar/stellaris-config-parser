@@ -20,9 +20,10 @@ import static net.turanar.stellaris.Global.*;
 
 public class Main {
     private static Map<String,Technology> technologies = new HashMap<>();
+    public static String FOLDER;
 
     public static void visitUnlock(GameObject type) throws IOException {
-        Files.list(Paths.get(type.folder))
+        Files.list(Paths.get(Main.FOLDER + "/" + type.folder))
         .filter(path->path.toString().endsWith(type.filter))
         .forEach((path) -> {
             try {
@@ -42,13 +43,15 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        FOLDER = args[0];
+
         Global.init();
         SortedSet<Technology> array = new TreeSet<Technology>();
         TechnologyVisitor visitor = new TechnologyVisitor();
 
         boolean add_event = false;
 
-        Files.list(Paths.get("common/technology"))
+        Files.list(Paths.get(FOLDER + "/common/technology"))
         .filter(path->path.toString().endsWith(".txt"))
         .forEach((path) -> {
             try {
@@ -197,10 +200,10 @@ public class Main {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(WeightModifier.class, new WeightModifierTypeAdapter());
         builder.registerTypeAdapter(Modifier.class, new ModifierTypeAdapter());
-        builder.setPrettyPrinting();
+        //builder.setPrettyPrinting();
         Gson gson = builder.create();
 
-        FileOutputStream fos = new FileOutputStream("techs.json");
+        FileOutputStream fos = new FileOutputStream(FOLDER + "/techs.json");
         String data = gson.toJson(root);
         fos.write(data.getBytes());
         fos.close();
