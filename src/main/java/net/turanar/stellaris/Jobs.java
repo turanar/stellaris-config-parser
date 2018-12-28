@@ -15,22 +15,43 @@ import net.turanar.stellaris.visitor.WeightModifierTypeAdapter;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
+import static net.turanar.stellaris.Global.gs;
 import static net.turanar.stellaris.Global.parser;
 
 public class Jobs {
     public static String FOLDER;
     public static Set<PopJob> jobList = new TreeSet<PopJob>();
+    public static Map<String,String> building_alias = new HashMap<>();
 
     public static void main(String[] args) throws Exception{
         FOLDER = args[0];
         Main.FOLDER = FOLDER;
         Global.init();
         JobVisitor visitor = new JobVisitor();
+
+        Files.list(Paths.get(FOLDER + "/common/buildings"))
+                .filter(path->path.toString().endsWith(".txt"))
+                .forEach((path) -> {
+                    try {
+                        StellarisParser parser = parser(path);
+                        if(parser == null) return;
+
+                        List<StellarisParser.PairContext> pairs = parser.file().pair();
+                        for(StellarisParser.PairContext pair : pairs) {
+                            String key = pair.key();
+                            String value = pair.key();
+                            for(StellarisParser.PairContext p : pair.value().map().pair()) {
+                                if("icon".equals(p.key())) value = gs(p);
+                            }
+                            building_alias.put(key,value);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
 
         Files.list(Paths.get(FOLDER + "/common/pop_jobs"))
         .filter(path->path.toString().endsWith(".txt"))

@@ -1,5 +1,6 @@
 package net.turanar.stellaris.visitor;
 
+import net.turanar.stellaris.Jobs;
 import net.turanar.stellaris.domain.PopCategory;
 import net.turanar.stellaris.domain.PopJob;
 import net.turanar.stellaris.parser.StellarisBaseVisitor;
@@ -24,7 +25,13 @@ public class JobVisitor extends StellarisBaseVisitor<PopJob> {
             switch(pair.key()) {
                 case "icon": retval.icon = gs(pair); break;
                 case "category": retval.category = PopCategory.valueOf(gs(pair)); break;
-                case "building_icon": retval.building = gs(pair); break;
+                case "building_icon": {
+                    retval.building = gs(pair);
+                    if (Jobs.building_alias.containsKey(gs(pair))) {
+                        retval.building = Jobs.building_alias.get(gs(pair));
+                    }
+                    break;
+                }
                 case "resources": {
                     for (StellarisParser.PairContext item : pair.value().map().pair()) {
                         if ("produces".equals(item.key())) {
