@@ -21,6 +21,7 @@ import static net.turanar.stellaris.Global.*;
 public class Main {
     private static Map<String,Technology> technologies = new HashMap<>();
     public static String FOLDER;
+    public static String OUTPUT;
 
     public static void visitUnlock(GameObject type) throws IOException {
         Files.list(Paths.get(Main.FOLDER + "/" + type.folder))
@@ -44,6 +45,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         FOLDER = args[0];
+        OUTPUT = (args.length > 1) ? args[1] : FOLDER;
 
         Global.init();
         SortedSet<Technology> array = new TreeSet<Technology>();
@@ -90,6 +92,7 @@ public class Main {
             }
             tech.base_weight = tech.base_weight*tech.base_factor;
 
+            // Flag Event Techs
             if(tech.base_weight == 0 && tech.prerequisites.size() < 1 && !tech.is_start_tech) tech.is_event = true;
             if(tech.base_weight == 0 && !tech.key.equals("tech_colossus") && !tech.key.equals("tech_mine_living_metal") && !tech.is_start_tech) tech.is_event = true;
             if(tech.base_weight > 0 && tech.weight_modifiers.size() > 0 && tech.weight_modifiers.get(0).type == ModifierType.always && tech.weight_modifiers.get(0).factor == 0.0f) tech.is_event = true;
@@ -100,6 +103,12 @@ public class Main {
                 public int compare(String o1, String o2) {
                     Technology parent1 = technologies.get(o1);
                     Technology parent2 = technologies.get(o2);
+
+                    // Same AREA - will compare key - are they similar ? ie. tech_energy_lance_1 vs tech_energy_lance_2
+                    String key1 = parent1.key.replaceAll("\\d","");
+                    String key2 = tech.key.replaceAll("\\d","");
+
+                    if(key1.equals(key2)) return -1;
 
                     // Same AREA - will compare Costs
                     if(parent1.area.equals(tech.area) && parent2.area.equals(tech.area)) {
@@ -167,44 +176,64 @@ public class Main {
             visitUnlock(object);
         }
 
-        Technology root = new Technology();
-        root.tier = 0;
+        Technology rootP = new Technology();
+        rootP.tier = 0;
+
+        Technology rootS = new Technology();
+        rootS.tier = 0;
+
+        Technology rootE = new Technology();
+        rootE.tier = 0;
 
         Technology physics = new Technology();
         physics.tier = 0; physics.name = Area.physics.name(); physics.area = Area.physics;
-        root.children.add(physics);
+        rootP.children.add(physics);
 
         Technology society = new Technology();
         society.tier = 0; society.name = Area.society.name(); society.area = Area.society;
-        root.children.add(society);
+        rootS.children.add(society);
 
         Technology engineering = new Technology();
         engineering.tier = 0; engineering.name = Area.engineering.name(); engineering.area = Area.engineering;
-        root.children.add(engineering);
+        rootE.children.add(engineering);
+
+        for(Technology tech : technologies.values()) {
+            if(tech.prerequisites.size() > 0) {
+                if(tech.is_event) continue;
+                String parent = tech.prerequisites.get(0);
+                technologies.get(parent).children.add(tech);
+            }
+        }
 
         for(Technology tech : technologies.values()) {
             if(tech.prerequisites.size() < 1) {
-                if(tech.is_event && !add_event) continue;
+                if(tech.is_event) continue;
                 switch(tech.area) {
                     case physics: physics.children.add(tech); break;
                     case society: society.children.add(tech); break;
                     case engineering: engineering.children.add(tech); break;
                 }
-            } else {
-                if(tech.is_event && !add_event) continue;
-                String parent = tech.prerequisites.get(0);
-                technologies.get(parent).children.add(tech);
             }
         }
 
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(WeightModifier.class, new WeightModifierTypeAdapter());
         builder.registerTypeAdapter(Modifier.class, new ModifierTypeAdapter());
-        //builder.setPrettyPrinting();
+        builder.setPrettyPrinting();
         Gson gson = builder.create();
 
-        FileOutputStream fos = new FileOutputStream(FOLDER + "/techs.json");
-        String data = gson.toJson(root);
+        FileOutputStream fos = new FileOutputStream(OUTPUT + "/physics.json");
+        String data = gson.toJson(rootP);
+        fos.write(data.getBytes());
+        fos.close();
+
+        fos = new FileOutputStream(OUTPUT + "/society.json");
+        data = gson.toJson(rootS);
+        fos.write(data.getBytes());
+        fos.close();
+
+        fos = new FileOutputStream(OUTPUT + "/engineering.json");
+        data = gson.toJson(rootE);
         fos.write(data.getBytes());
         fos.close();
     }

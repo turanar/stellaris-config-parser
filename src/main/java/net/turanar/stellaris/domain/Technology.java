@@ -41,7 +41,7 @@ public class Technology implements Comparable<Technology> {
 
     @Override
     public String toString() {
-        return new Gson().toJson(this);
+        return this.key;
     }
 
     @Override
@@ -62,8 +62,19 @@ public class Technology implements Comparable<Technology> {
         final int EQUAL = 0;
 
         if (this == that) return EQUAL;
+        if (this.equals(that)) return EQUAL;
 
-        int comparison = this.area.compareTo(that.area);
+        if(this.key.equals("tech_bio_reactor") || that.key.equals("tech_bio_reactor")) {
+            System.out.println(this + " vs " + that);
+
+        }
+        int comparison = EQUAL;
+
+        if(that.children.size() == 0 && this.children.size() > 0) comparison = -1;
+        if(that.children.size() > 0 && this.children.size() == 0) comparison = 1;
+        if (comparison != EQUAL) return comparison;
+
+        comparison = this.area.compareTo(that.area);
         if (comparison != EQUAL) return comparison;
 
         comparison = this.category.compareTo(that.category);
