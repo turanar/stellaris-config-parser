@@ -36,7 +36,8 @@ public class Global {
 
     public static String i18n(String key) {
         String retval = GLOBAL_STRINGS.get(key.toLowerCase());
-        if(retval == null) return key;
+        if(retval == null) retval = GLOBAL_VARIABLES.get(key.toLowerCase());
+        if(retval == null) retval = key;
         if(retval.contains("$")) {
             retval = applyTemplate(retval);
         }

@@ -98,9 +98,7 @@ public class Main {
             if(tech.base_weight > 0 && tech.weight_modifiers.size() > 0 && tech.weight_modifiers.get(0).type == ModifierType.always && tech.weight_modifiers.get(0).factor == 0.0f) tech.is_event = true;
 
             // Re-order prerequisite so the most costly is first AND must be the same AREA
-            tech.prerequisites.sort(new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
+            tech.prerequisites.sort((o1, o2) -> {
                     Technology parent1 = technologies.get(o1);
                     Technology parent2 = technologies.get(o2);
 
@@ -123,7 +121,6 @@ public class Main {
                     }
 
                     return 0;
-                }
             });
 
             for(Modifier m : tech.potential) {
@@ -185,6 +182,9 @@ public class Main {
         Technology rootE = new Technology();
         rootE.tier = 0;
 
+        Technology rootA = new Technology();
+        rootA.tier = 0;
+
         Technology physics = new Technology();
         physics.tier = 0; physics.name = Area.physics.name(); physics.area = Area.physics;
         rootP.children.add(physics);
@@ -197,24 +197,51 @@ public class Main {
         engineering.tier = 0; engineering.name = Area.engineering.name(); engineering.area = Area.engineering;
         rootE.children.add(engineering);
 
+        ArrayList<Technology> anomalies = new ArrayList<>();
+
         for(Technology tech : technologies.values()) {
             if(tech.prerequisites.size() > 0) {
-                if(tech.is_event) continue;
                 String parent = tech.prerequisites.get(0);
+                if(tech.is_event && !technologies.get(parent).is_event) continue;
                 technologies.get(parent).children.add(tech);
             }
         }
 
         for(Technology tech : technologies.values()) {
             if(tech.prerequisites.size() < 1) {
-                if(tech.is_event) continue;
-                switch(tech.area) {
-                    case physics: physics.children.add(tech); break;
-                    case society: society.children.add(tech); break;
-                    case engineering: engineering.children.add(tech); break;
+                if(tech.is_event) {
+                    anomalies.add(tech);
+                    if(tech.children.size() > 0) {
+                        for(Technology child : tech.children) {
+                            child.is_event = true;
+                            anomalies.add(child);
+                        }
+                    }
+                } else {
+                    switch(tech.area) {
+                        case physics: physics.children.add(tech); break;
+                        case society: society.children.add(tech); break;
+                        case engineering: engineering.children.add(tech); break;
+                    }
+                }
+            } else {
+                if(tech.is_event) {
+                    anomalies.add(tech);
+                    if(tech.children.size() > 0) {
+                        for(Technology child : tech.children) {
+                            child.is_event = true;
+                            anomalies.add(child);
+                        }
+                    }
                 }
             }
         }
+
+        anomalies.sort((o1, o2) -> {
+            if(o1 == o2) return 0;
+            if(o1.equals(o2)) return 0;
+            return o1.key.compareTo(o2.key);
+        });
 
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(WeightModifier.class, new WeightModifierTypeAdapter());
@@ -234,6 +261,11 @@ public class Main {
 
         fos = new FileOutputStream(OUTPUT + "/engineering.json");
         data = gson.toJson(rootE);
+        fos.write(data.getBytes());
+        fos.close();
+
+        fos = new FileOutputStream(OUTPUT + "/anomalies.json");
+        data = gson.toJson(anomalies);
         fos.write(data.getBytes());
         fos.close();
     }
