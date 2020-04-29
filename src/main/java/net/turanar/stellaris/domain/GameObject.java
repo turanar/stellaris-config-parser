@@ -6,7 +6,7 @@ public enum GameObject {
     COMPONENT("Component","common/component_templates"),
     EDICTS("Edict", "common/edicts","edict_"),
     BUILDING("Building", "common/buildings"),
-    STRAT_RESS("Reveals Ressource","common/strategic_resources"),
+    STRAT_RESS("Reveals Resource","common/strategic_resources"),
     SB_MODULE("Starbase Module", "common/starbase_modules","sm_"),
     POLICY("Policy","common/policies","policy_"),
     //BUILDABLE_POP("Buildable Pop","common/buildable_pops"),
