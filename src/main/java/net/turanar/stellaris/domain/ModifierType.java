@@ -12,6 +12,7 @@ import static net.turanar.stellaris.Global.*;
 
 public enum ModifierType {
     has_ascension_perk("Has %s Ascension Perk"),
+    has_federation_perk("Has %s Federation Perk"),
     has_authority("Has %s Authority"),
     has_blocker("Has £blocker£ Tile Blocker: %s"),
     has_technology("Has Technology: %s"),
@@ -28,14 +29,20 @@ public enum ModifierType {
     is_planet_class("Is %s"),
     has_communications("Has communication with our Empire"),
     pop_has_trait("Pop has trait %s"),
+    has_origin("Has Origin %s"),
     has_policy_flag((p) -> f("Has policy %s", i18n(gs(p) + "_name"))),
     owns_any_bypass((p) -> f("Controls a system with a %s", i18n("bypass_" + gs(p).toLowerCase()))),
     has_seen_any_bypass((p) -> f("Has encountered a %s", i18n("bypass_" + gs(p).toLowerCase()))),
+    is_lithoid("Is Lithoid"),
 
     is_xenophile(DefaultParser.SCRIPTED),
     is_pacifist(DefaultParser.SCRIPTED),
     is_materialist(DefaultParser.SCRIPTED),
     is_spiritualist(DefaultParser.SCRIPTED),
+    is_militarist(DefaultParser.SCRIPTED),
+    is_egalitarian(DefaultParser.SCRIPTED),
+    is_xenophobe(DefaultParser.SCRIPTED),
+    is_authoritarian(DefaultParser.SCRIPTED),
     is_gestalt(DefaultParser.SCRIPTED),
     is_mechanical_empire(DefaultParser.SCRIPTED),
     is_regular_empire(DefaultParser.SCRIPTED),
@@ -43,10 +50,16 @@ public enum ModifierType {
     is_hive_empire(DefaultParser.SCRIPTED),
     is_megacorp(DefaultParser.SCRIPTED),
     allows_slavery(DefaultParser.SCRIPTED),
+    has_ancrel(DefaultParser.SCRIPTED),
+    has_nemesis(DefaultParser.SCRIPTED),
+    is_lithoid_empire(DefaultParser.SCRIPTED),
 
     is_ai("Is AI|Is NOT AI", DefaultParser.SIMPLE_BOOLEAN),
 
+    country_uses_consumer_goods("Use consumer goods|Does NOT use consumer goods", DefaultParser.SIMPLE_BOOLEAN),
+
     is_enslaved("Pop is enslaved|Pop is NOT enslaved", DefaultParser.SIMPLE_BOOLEAN),
+    is_galactic_community_member("Member of the Galactic Community|NOT a member of the Galactic Community", DefaultParser.SIMPLE_BOOLEAN),
     is_sapient("Pop is Sapient|Pop is NOT Sapient", DefaultParser.SIMPLE_BOOLEAN),
     has_any_megastructure_in_empire("Has any Megastructure|Does NOT have any Megastructure",DefaultParser.SIMPLE_BOOLEAN),
     always("Always|Never", DefaultParser.SIMPLE_BOOLEAN),
@@ -65,12 +78,20 @@ public enum ModifierType {
     any_relation("Any Country Relation",DefaultParser.CONDITIONAL),
     any_pop("Any Pop", DefaultParser.CONDITIONAL),
     owner_species("Founder Species :", DefaultParser.CONDITIONAL),
+    federation("Federation :", DefaultParser.CONDITIONAL),
+    any_member("Any member", DefaultParser.CONDITIONAL),
+    any_system_planet("Any system planet", DefaultParser.CONDITIONAL),
 
     NOR("All must be false", DefaultParser.CONDITIONAL),
     OR("One must be true", DefaultParser.CONDITIONAL),
     NAND("One or more must be false", DefaultParser.CONDITIONAL),
     AND("All must be true", DefaultParser.CONDITIONAL),
 
+    is_active_resolution((p) -> {
+        String resultion = p.value().getText();
+        resultion = resultion.replaceAll("\"","");
+        return "Has resolution : " + i18n(resultion);
+    }),
     has_trait((p) -> {
         String expertise = i18n(gs(p));
         if(expertise.contains("Expertise: ")) expertise = expertise.replaceAll("Expertise: ","") + " Expert";
@@ -103,6 +124,18 @@ public enum ModifierType {
             }
         }
         return "Has £" + type + "£ " + i18n(type) + " " +  count;
+    }),
+
+    count_owned_pop((p) -> {
+        String retval = "Number of slaves is %s %s";
+        String size = null, operator = null, count = null;
+        for(PairContext prop : p.value().map().pair()) {
+            if (prop.key().equals("count")) {
+                operator = op(prop);
+                count = gs(prop);
+            }
+        }
+        return String.format(retval, operator, count);
     }),
 
     count_starbase_sizes((p) -> {

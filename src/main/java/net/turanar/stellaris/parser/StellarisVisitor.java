@@ -1,4 +1,4 @@
-// Generated from D:/workspaces/stellaris\Stellaris.g4 by ANTLR 4.7
+// Generated from D:/Java/workspaces/stellaris-config-parser\Stellaris.g4 by ANTLR 4.9.1
 package net.turanar.stellaris.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
